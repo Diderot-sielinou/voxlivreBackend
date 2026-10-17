@@ -8,7 +8,7 @@ Production backend of the Voxlivre mobile app: PDF import, text extraction and O
 text-to-speech split into downloadable parts, word-level highlighting, multi-device
 library and Mobile Money payments — running on a cost-optimised AWS stack.
 
-[![CI](https://github.com/Diderot-sielinou/voxkivreBackend/actions/workflows/ci.yml/badge.svg)](https://github.com/Diderot-sielinou/voxkivreBackend/actions/workflows/ci.yml)
+[![CI](https://github.com/Diderot-sielinou/voxlivreBackend/actions/workflows/ci.yml/badge.svg)](https://github.com/Diderot-sielinou/voxlivreBackend/actions/workflows/ci.yml)
 ![Node](https://img.shields.io/badge/Node-22_LTS-339933?logo=nodedotjs&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)
 ![NestJS](https://img.shields.io/badge/NestJS-11-E0234E?logo=nestjs&logoColor=white)
@@ -256,8 +256,8 @@ The mobile client (Flutter) lives in a separate repository. Public landing page:
 ### 1. Clone and install
 
 ```bash
-git clone https://github.com/Diderot-sielinou/voxkivreBackend.git
-cd voxkivreBackend
+git clone https://github.com/Diderot-sielinou/voxlivreBackend.git
+cd voxlivreBackend
 pnpm install
 ```
 
