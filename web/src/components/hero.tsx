@@ -8,7 +8,7 @@ import { PhonePlayer } from './phone-player';
 
 export function Hero() {
   return (
-    <section className="bg-grid relative isolate overflow-hidden">
+    <section id="accueil" className="bg-grid relative isolate overflow-hidden">
       {/* Halo « Aube » derrière la maquette : le seul dégradé fort de l'écran. */}
       <div
         aria-hidden
@@ -37,10 +37,7 @@ export function Hero() {
             moment où il est prononcé : vous ne perdez jamais le fil, même dans le taxi.
           </p>
 
-          <div
-            id="hero-cta"
-            className="flex flex-col items-center gap-3 sm:flex-row sm:justify-center lg:justify-start"
-          >
+          <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-center lg:justify-start">
             <DownloadButton />
             <a
               href="#voix"

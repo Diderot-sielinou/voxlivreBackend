@@ -8,14 +8,14 @@ import { APK, formatMegabytes, PRIMARY_APK } from '@/content/apk';
 import { Logo } from './logo';
 
 /**
- * Barre collante en bas d'écran (mobile) : visible quand ni le bouton du
- * hero ni la section d'installation ne sont à l'écran. Zone sûre respectée.
+ * Barre collante en bas d'écran (mobile) : visible quand ni le hero (bouton et
+ * maquette du lecteur) ni la section d'installation ne sont à l'écran. Zone sûre respectée.
  */
 export function MobileDownloadBar() {
   const [show, setShow] = useState(false);
 
   useEffect(() => {
-    const targets = ['hero-cta', 'installer-zone']
+    const targets = ['accueil', 'installer-zone']
       .map((id) => document.getElementById(id))
       .filter((el): el is HTMLElement => el !== null);
     const visible = new Set<Element>();
@@ -39,7 +39,7 @@ export function MobileDownloadBar() {
     >
       <Logo className="size-9 shrink-0 text-ink" />
       <div className="min-w-0 flex-1 leading-tight">
-        <p className="truncate text-sm font-semibold text-ink">Voxlivre pour Android</p>
+        <p className="truncate text-sm font-semibold text-ink">Voxlivre · Android</p>
         <p className="tabular text-xs text-ink-2">
           v{APK.version} · {formatMegabytes(PRIMARY_APK.bytes)}
         </p>
