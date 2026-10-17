@@ -1,0 +1,14 @@
+{
+  "version": "0.1.0",
+  "build": 1,
+  "minAndroid": "7.0",
+  "publishedAt": "2026-10-17",
+  "files": [
+    {
+      "abi": "universal",
+      "path": "/telecharger/voxlivre-0.1.0.apk",
+      "bytes": 66246175,
+      "sha256": "5c84fd62588d75b2a0aa53f4f2563162548ac6b3cd91f1068b90347c42be12e2"
+    }
+  ]
+}
