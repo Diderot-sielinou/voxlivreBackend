@@ -17,6 +17,7 @@ library and Mobile Money payments — running on a cost-optimised AWS stack.
 ![AWS](https://img.shields.io/badge/AWS-EC2_%C2%B7_S3_%C2%B7_Polly_%C2%B7_SES-FF9900?logo=amazonwebservices&logoColor=white)
 ![Terraform](https://img.shields.io/badge/IaC-Terraform-7B42BC?logo=terraform&logoColor=white)
 
+[At a glance](#-at-a-glance) ·
 [Problem](#-problem-statement) ·
 [Architecture](#-architecture) ·
 [AWS](#-aws-infrastructure) ·
@@ -28,6 +29,19 @@ library and Mobile Money payments — running on a cost-optimised AWS stack.
 </div>
 
 ---
+
+## ⚡ At a Glance
+
+> **Solo project, built end to end** — product design, backend, infrastructure and CI/CD
+> by one developer, with a Flutter client in
+> [mobileVoxlivre](https://github.com/Diderot-sielinou/mobileVoxlivre).
+
+|                |                                                                                                   |
+| -------------- | ------------------------------------------------------------------------------------------------- |
+| **Scope**      | 8 business modules · async pipeline PDF → OCR → TTS → MP3 + WebVTT · Mobile Money payments        |
+| **Quality**    | 900+ automated tests · hexagonal boundaries enforced by ESLint · 29 Architecture Decision Records |
+| **Production** | AWS (Paris) in Terraform · keyless deploys through GitHub OIDC · about $6/month                   |
+| **Live**       | Landing page: [voxlivre.store](https://voxlivre.store)                                            |
 
 ## 📌 Problem Statement
 
@@ -242,7 +256,8 @@ All routes are documented in Swagger (`/docs`, enabled outside production). Erro
 
 ## 📷 Screenshots
 
-The mobile client (Flutter) lives in a separate repository. Public landing page:
+The mobile client (Flutter) lives in
+[mobileVoxlivre](https://github.com/Diderot-sielinou/mobileVoxlivre). Public landing page:
 **[voxlivre.store](https://voxlivre.store)**.
 
 ## 🧰 Installation & Setup
