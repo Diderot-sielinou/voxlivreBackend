@@ -5,6 +5,8 @@ import { FixedClock } from '../../../../../test/support/fakes';
 import { user } from '../../../identity/infrastructure/persistence/schema/auth.schema';
 import { GetBillingAccountUseCase } from '../../application/use-cases/get-billing-account.use-case';
 import { GrantOfferUseCase } from '../../application/use-cases/grant-offer.use-case';
+import { GrantPendingWelcomeCreditsUseCase } from '../../application/use-cases/grant-pending-welcome-credits.use-case';
+import { GrantWelcomeCreditsUseCase } from '../../application/use-cases/grant-welcome-credits.use-case';
 import { RefundQuotaUseCase } from '../../application/use-cases/refund-quota.use-case';
 import { ReserveQuotaUseCase } from '../../application/use-cases/reserve-quota.use-case';
 
@@ -12,14 +14,16 @@ import { DrizzleOfferCatalog } from './offer-catalog.drizzle-repository';
 import { DrizzlePurchaseLedger } from './purchase-ledger.drizzle-repository';
 import { DrizzleUnitsLedger } from './units-ledger.drizzle-repository';
 import { DrizzleWalletHistory } from './wallet-history.drizzle-repository';
+import { DrizzleWelcomeCandidates } from './welcome-candidates.drizzle-query';
 
 const AT = new Date('2026-10-10T10:00:00Z');
 const reservation = (id: number) => `01a11019-f2e7-7014-8369-${String(id).padStart(12, '0')}`;
 
 /**
- * Contre un vrai Postgres (migrations 0009, 0010 et 0013 comprises) : répartition
- * entre les trois sources, remboursement, verrous sous concurrence, octroi
- * idempotent, catalogue et historique.
+ * Contre un vrai Postgres (migrations 0009, 0010, 0013 et 0018 comprises) :
+ * répartition entre les trois sources, remboursement, verrous sous
+ * concurrence, octroi idempotent, catalogue, historique et crédits de
+ * bienvenue.
  */
 describe('billing Drizzle adapters (integration, Testcontainers)', () => {
   let pg: StartedPostgres;
@@ -49,12 +53,21 @@ describe('billing Drizzle adapters (integration, Testcontainers)', () => {
     const uow = new DrizzleUnitOfWork(pg.db);
     const clock = new FixedClock(AT);
     const policy = { freeTierUnitsPerMonth: freeTier, maxCharsPerConversion: 1_000_000 };
+    const grant = new GrantOfferUseCase(catalog, purchases, uow, clock);
+    const welcome = { offerCode: 'welcome' };
+    const grantWelcome = new GrantWelcomeCreditsUseCase(welcome, grant);
     return {
+      grantWelcome,
+      sweepWelcome: new GrantPendingWelcomeCreditsUseCase(
+        welcome,
+        new DrizzleWelcomeCandidates(pg.db),
+        grantWelcome,
+      ),
       catalog,
       history: new DrizzleWalletHistory(pg.db),
       reserve: new ReserveQuotaUseCase(units, policy, uow, clock),
       refund: new RefundQuotaUseCase(units, uow, clock),
-      grant: new GrantOfferUseCase(catalog, purchases, uow, clock),
+      grant,
       account: new GetBillingAccountUseCase(units, policy, clock),
     };
   }
@@ -180,5 +193,33 @@ describe('billing Drizzle adapters (integration, Testcontainers)', () => {
       paymentReference: 'pay-c',
     });
     expect(replay.isErr()).toBe(true);
+  });
+
+  it('grants the hidden welcome offer once per account, usable by natural voices (ADR-0030)', async () => {
+    await pg.db.insert(user).values({ id: 'dora', name: 'Dora', email: 'dora@x.cm' });
+    const { catalog, grantWelcome, sweepWelcome, reserve, account } = setup(0);
+    expect(await catalog.findByCode('welcome')).toMatchObject({
+      kind: 'credits',
+      price: 0,
+      units: 220_000,
+      active: false,
+    });
+
+    expect(await grantWelcome.execute('dora')).toMatchObject({ value: true });
+    const swept = await sweepWelcome.execute();
+    expect(swept).toMatchObject({ granted: swept.examined, failures: [] });
+    expect(await sweepWelcome.execute()).toStrictEqual({ examined: 0, granted: 0, failures: [] });
+    expect(await grantWelcome.execute('dora')).toMatchObject({ value: false });
+    expect(await account.execute('dora')).toMatchObject({ credits: 220_000 });
+    expect(await account.execute('alice')).toMatchObject({ credits: 220_000 });
+
+    const natural = await reserve.execute({
+      reservationId: reservation(9),
+      userId: 'dora',
+      chars: 1000,
+      tier: 'natural',
+    });
+    expect(natural.isOk()).toBe(true);
+    expect(await account.execute('dora')).toMatchObject({ credits: 216_000 });
   });
 });
