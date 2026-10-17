@@ -4,7 +4,8 @@
  *
  * Envoi d'OTP : coûte un SMS/email et alimente l'abus du palier gratuit
  * (RNF-28) → strict. Vérification : brute-force déjà borné par
- * `allowedAttempts`, on limite seulement le volume.
+ * `allowedAttempts`, on limite seulement le volume. Connexion Google : même
+ * volume qu'une vérification (le jeton est vérifié chez Google, ADR-0030).
  */
 const TEN_MINUTES = 60 * 10;
 
@@ -15,4 +16,5 @@ export const AUTH_RATE_LIMIT_RULES = {
   '/phone-number/send-otp': { window: TEN_MINUTES, max: 5 },
   '/sign-in/email-otp': { window: TEN_MINUTES, max: 15 },
   '/phone-number/verify': { window: TEN_MINUTES, max: 15 },
+  '/sign-in/social': { window: TEN_MINUTES, max: 15 },
 } as const;

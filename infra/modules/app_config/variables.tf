@@ -42,3 +42,8 @@ variable "otp_sender_email" {
   description = "Expéditeur des e-mails OTP (adresse du domaine vérifié dans SES, ADR-0018)."
   type        = string
 }
+
+variable "google_client_id" {
+  description = "Identifiant du client OAuth Web de Google, audience des ID tokens de l'app (ADR-0030)."
+  type        = string
+}

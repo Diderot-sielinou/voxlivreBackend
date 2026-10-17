@@ -1,10 +1,12 @@
-import { Module } from '@nestjs/common';
+import { Logger, Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 import { type Env } from '@/shared/config';
 import { DRIZZLE_CLIENT, type DrizzleClient } from '@/shared/persistence';
 
 import { NotificationModule } from '../../../notification/notification.module';
+import { UserSignedUpEvent } from '../../domain/events/user-signed-up.event';
 import { OTP_SENDER, type OtpSenderPort } from '../../domain/ports/otp-sender.port';
 import { LoggingOtpSenderAdapter } from '../otp/logging-otp-sender.adapter';
 import { NotificationOtpSender } from '../otp/notification-otp-sender.adapter';
@@ -20,7 +22,14 @@ import { buildBetterAuth, type BetterAuthInstance } from './better-auth.config';
  * `OTP_SENDER` est câblé ici selon `OTP_DELIVERY_MODE` : `log` (dev, codes
  * dans les logs) ou `notification` (module notification : SMS Orange,
  * e-mail SES, plafonds anti-abus — ADR-0017).
+ *
+ * Un compte créé publie `UserSignedUpEvent` (crédits de bienvenue,
+ * ADR-0030) ; `emitAsync` attend les écouteurs, donc les crédits sont là
+ * dès la première réponse. Une erreur est journalisée, jamais remontée : la
+ * connexion n'échoue pas pour un crédit, le balayage de billing rattrape.
  */
+const signUpLog = new Logger('AuthModule');
+
 @Module({
   imports: [NotificationModule],
   providers: [
@@ -38,11 +47,12 @@ import { buildBetterAuth, type BetterAuthInstance } from './better-auth.config';
     NotificationOtpSender,
     {
       provide: BETTER_AUTH,
-      inject: [ConfigService, DRIZZLE_CLIENT, OTP_SENDER],
+      inject: [ConfigService, DRIZZLE_CLIENT, OTP_SENDER, EventEmitter2],
       useFactory: (
         config: ConfigService<Env, true>,
         db: DrizzleClient,
         otpSender: OtpSenderPort,
+        events: EventEmitter2,
       ): BetterAuthInstance =>
         buildBetterAuth(
           {
@@ -56,9 +66,17 @@ import { buildBetterAuth, type BetterAuthInstance } from './better-auth.config';
             AUTH_RATE_LIMIT_STORAGE: config.get('AUTH_RATE_LIMIT_STORAGE', { infer: true }),
             SESSION_EXPIRES_IN_SECONDS: config.get('SESSION_EXPIRES_IN_SECONDS', { infer: true }),
             SESSION_UPDATE_AGE_SECONDS: config.get('SESSION_UPDATE_AGE_SECONDS', { infer: true }),
+            GOOGLE_CLIENT_ID: config.get('GOOGLE_CLIENT_ID', { infer: true }),
           },
           db,
           otpSender,
+          async (userId) => {
+            try {
+              await events.emitAsync(UserSignedUpEvent.NAME, new UserSignedUpEvent(userId));
+            } catch (error: unknown) {
+              signUpLog.error({ err: error }, 'identity.user.signed-up listener failed');
+            }
+          },
         ),
     },
   ],

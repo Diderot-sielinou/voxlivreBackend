@@ -30,6 +30,10 @@ locals {
     # Paiement fermé jusqu'à l'ouverture chez Campay (ADR-0021 §14) ; le
     # défaut `fake` est refusé en production.
     PAYMENT_PROVIDER = "disabled"
+    # Version d'essai (ADR-0030) : connexion Google (client OAuth Web, pas un
+    # secret) et crédits de bienvenue ; vider WELCOME_OFFER_CODE arrête l'offre.
+    GOOGLE_CLIENT_ID   = var.google_client_id
+    WELCOME_OFFER_CODE = "welcome"
   }
 
   deploy_settings = {

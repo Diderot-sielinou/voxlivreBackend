@@ -102,6 +102,7 @@ module "app_config" {
   bucket_name      = module.storage.bucket_name
   image_repository = module.registry.repository_url
   otp_sender_email = "noreply@${local.product_domain}"
+  google_client_id = "671668438764-sge7jbkfsvcnea2bevn23p7613ruj98p.apps.googleusercontent.com"
 }
 
 module "app_ec2" {

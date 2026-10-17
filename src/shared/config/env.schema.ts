@@ -176,6 +176,12 @@ export const envSchema = z
       .int()
       .positive()
       .default(60 * 60 * 24),
+    // Connexion Google par ID token (ADR-0030) : identifiant du client OAuth
+    // **Web** (audience des jetons obtenus par l'app). Absent → Google coupé.
+    GOOGLE_CLIENT_ID: z
+      .string()
+      .regex(/^[\w-]+\.apps\.googleusercontent\.com$/, 'GOOGLE_CLIENT_ID: a Google OAuth client ID')
+      .optional(),
 
     // ------------------------------------------------------------------
     // Stockage objet S3-compatible (ADR-0007, ADR-0012) — deux formes :
@@ -236,6 +242,9 @@ export const envSchema = z
     FREE_TIER_UNITS_PER_MONTH: z.coerce.number().int().nonnegative().default(50_000),
     // Plafond d'une conversion, quel que soit le quota disponible (~400 pages).
     MAX_CHARS_PER_CONVERSION: z.coerce.number().int().positive().default(1_000_000),
+    // Offre accordée une fois à chaque compte (ADR-0030), montant au
+    // catalogue. Absente → aucun crédit de bienvenue.
+    WELCOME_OFFER_CODE: z.string().min(1).max(32).optional(),
 
     // ------------------------------------------------------------------
     // Paiement Mobile Money (RF-23, ADR-0021)
