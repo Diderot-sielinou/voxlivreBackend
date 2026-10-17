@@ -118,11 +118,12 @@ resource "aws_cloudfront_function" "router" {
   code    = templatefile("${path.module}/router.js", { domain = var.domain_name })
 }
 
-# Site sans script, sans police externe, sans cookie : la CSP n'autorise que
-# les styles et images du site lui-même.
+# Site Next.js en export statique (ADR-0031) : tout vient du site lui-même ;
+# scripts et styles inline autorisés pour l'hydratation de Next.js. Pas de
+# formulaire, pas de cookie, aucune ressource tierce.
 resource "aws_cloudfront_response_headers_policy" "security" {
   name    = "${var.name}-site-security"
-  comment = "En-têtes de sécurité du site statique (ADR-0020)"
+  comment = "En-têtes de sécurité du site statique (ADR-0020, ADR-0031)"
 
   security_headers_config {
     strict_transport_security {
@@ -132,7 +133,7 @@ resource "aws_cloudfront_response_headers_policy" "security" {
     }
 
     content_security_policy {
-      content_security_policy = "default-src 'none'; style-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+      content_security_policy = "default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; media-src 'self'; connect-src 'self'; manifest-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
       override                = true
     }
 
