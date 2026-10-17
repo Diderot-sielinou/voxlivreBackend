@@ -19,7 +19,7 @@ infra/
 │   └── cicd/         fournisseur OIDC GitHub + rôle de déploiement et de publication du site (moindre privilège)
 └── envs/main/        environnement principal (phase 1) — état dans S3, verrou natif
 deploy/               (racine du dépôt) compose de prod, Caddyfile, script de boot, unité systemd
-site/                 (racine du dépôt) page d'accueil statique, publiée par .github/workflows/site.yml
+web/                  (racine du dépôt) site Next.js en export statique (ADR-0031), publié par .github/workflows/site.yml
 ```
 
 État d'avancement : **3a** (fondations), **3b** (configuration, instance,
@@ -151,21 +151,40 @@ push sur master → CI complète (9 contrôles) → job « Deploy (production) �
   automatique (une migration appliquée ne se défait pas, cf.
   `docs/code-engineering/migrations.md`).
 
-## Page d'accueil `voxlivre.store` (ADR-0020)
+## Page d'accueil `voxlivre.store` (ADR-0020, ADR-0031)
 
 ```
-push sur master touchant site/ → workflow « Site » (ou Run workflow à la main)
-  OIDC → même rôle que Deploy (environnement production)
-  → aws s3 sync site/ --delete → invalidation CloudFront /* → curl https://voxlivre.store/
+push sur master touchant web/ → workflow « Site » (ou Run workflow à la main)
+  pnpm build (web/out/) → OIDC → même rôle que Deploy (environnement production)
+  → s3 sync _next/static/ (cache 1 an) puis le reste --delete (sauf telecharger/)
+  → invalidation CloudFront /* → curl https://voxlivre.store/
 ```
+
+- Code : `web/` (Next.js 16 en export statique, Tailwind 4, design system de
+  l'app). En local : `cd web && pnpm dev`, ou `pnpm build && pnpm serve`
+  (sert `out/` avec les règles du routeur CloudFront).
 
 - Servie par CloudFront depuis un bucket **dédié et privé** (lecture par OAC
   de cette seule distribution) : toujours en ligne, même instance arrêtée.
 - Fonction `router` (viewer-request) : `www.` → 301 vers le domaine nu ;
   `/conditions` → `conditions.html`. Clé absente → `404.html` (statut 404).
-- En-têtes de sécurité posés par CloudFront (HSTS, CSP sans script, DENY).
-  Le site n'a ni script, ni police externe, ni traceur : garder ainsi, ou
-  élargir la CSP dans `modules/site`.
+- En-têtes de sécurité posés par CloudFront (HSTS, CSP, DENY). CSP : tout
+  vient du site, scripts et styles inline permis pour Next.js (ADR-0031) ;
+  ni police externe, ni traceur, ni cookie : garder ainsi.
+- **Publier une version de l'APK** (écrit en production, à la main) :
+
+  ```bash
+  cd mobileVoxlivre && flutter build apk --release --dart-define-from-file=config/prod.json
+  cd ../backendVoxlivre
+  AWS_PROFILE=voxlivre web/scripts/publish-apk.sh \
+    ../mobileVoxlivre/build/app/outputs/flutter-apk/app-release.apk 0.1.0 1
+  ```
+
+  Envoie `telecharger/voxlivre-<version>.apk` et `telecharger/voxlivre.apk`
+  (dernière version), puis réécrit `web/src/content/apk.json` : committer et
+  merger pour que la page affiche la version, la taille et l'empreinte.
+  La synchronisation du site ne touche jamais `telecharger/`.
+
 - **Secret / variable de l'environnement `production`** : `SITE_BUCKET`
   (sortie `terraform output -raw site_bucket_name`, en secret : contient
   l'ID de compte) et `SITE_DISTRIBUTION_ID` (sortie `site_distribution_id`).
