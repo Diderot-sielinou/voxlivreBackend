@@ -9,7 +9,7 @@ import { PhonePlayer } from './phone-player';
 export function Hero() {
   return (
     <section id="accueil" className="bg-grid relative isolate overflow-hidden">
-      {/* Halo « Aube » derrière la maquette : le seul dégradé fort de l'écran. */}
+      {/* Halo « Aube » derrière la maquette : le seul dégradé fort de l'écran. */}
       <div
         aria-hidden
         className="bg-aube absolute top-1/2 right-[-20%] -z-10 size-[44rem] -translate-y-1/2 rounded-full opacity-30 blur-[120px] lg:right-[-6%]"

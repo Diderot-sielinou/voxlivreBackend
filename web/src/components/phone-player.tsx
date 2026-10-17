@@ -12,7 +12,7 @@ import { ReadAlongText } from './read-along-text';
 const SAMPLE = VOICE_SAMPLES[0]!;
 
 /**
- * Maquette du lecteur de l'app (écran plein, fond « Nuit »). Rejoue le
+ * Maquette du lecteur de l'app (écran plein, fond « Nuit »). Rejoue le
  * surlignage en silence tant qu'elle est visible ; ▶ fait entendre la voix
  * de Léa avec le même texte.
  */

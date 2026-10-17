@@ -36,7 +36,7 @@ export default function SupprimerComptePage() {
       <p>
         Écrivez à{' '}
         <a href={`mailto:${CONTACT_EMAIL}?subject=Supprimer%20mon%20compte`}>{CONTACT_EMAIL}</a>{' '}
-        avec l’objet « Supprimer mon compte » :
+        avec l’objet « Supprimer mon compte » :
       </p>
       <ul>
         <li>depuis l’adresse e-mail de votre compte ;</li>
