@@ -41,6 +41,9 @@ aws s3 cp "s3://$bucket/$key" "s3://$bucket/telecharger/voxlivre.apk" --content-
 aws cloudfront create-invalidation --distribution-id "$distribution" \
   --paths '/telecharger/voxlivre.apk' --query 'Invalidation.Id' --output text
 
+# Le programme est du JavaScript : `${version}` est un gabarit JS, pas une
+# expansion bash (valeurs passées en arguments) — d'où les guillemets simples.
+# shellcheck disable=SC2016
 node -e '
 const fs = require("node:fs");
 const [file, version, build, bytes, sha256] = process.argv.slice(1);
