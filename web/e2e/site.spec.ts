@@ -83,3 +83,18 @@ test('▶ joue l’extrait et le surlignage avance avec le son', async ({ page }
   await expect.poll(async () => active.textContent(), { timeout: 5_000 }).not.toBe(first);
   await card.getByRole('button', { name: 'Mettre en pause Léa' }).click();
 });
+
+test('la barre de téléchargement mobile ne couvre jamais le hero', async ({ page, isMobile }) => {
+  test.skip(!isMobile, 'barre réservée aux petits écrans');
+  await page.goto('/');
+  const bar = page
+    .getByText('Voxlivre · Android')
+    .locator('xpath=ancestor::div[contains(@class,"fixed")]');
+  // Hero visible (bouton puis maquette du lecteur) : barre cachée.
+  await expect(bar).toHaveAttribute('aria-hidden', 'true');
+  await page.locator('#accueil').evaluate((el) => window.scrollTo(0, el.scrollHeight - 300));
+  await expect(bar).toHaveAttribute('aria-hidden', 'true');
+  // Hero dépassé (section suivante en haut d'écran) : barre visible.
+  await page.locator('#voix').evaluate((el) => el.scrollIntoView({ block: 'start' }));
+  await expect(bar).toHaveAttribute('aria-hidden', 'false');
+});

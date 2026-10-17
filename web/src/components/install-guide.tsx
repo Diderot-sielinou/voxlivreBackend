@@ -1,4 +1,12 @@
-import { CheckCircle2, Download, FolderOpen, ShieldAlert, ShieldCheck } from 'lucide-react';
+import {
+  CheckCircle2,
+  Download,
+  FolderOpen,
+  ShieldAlert,
+  ShieldCheck,
+  ShieldQuestion,
+  type LucideIcon,
+} from 'lucide-react';
 import Image from 'next/image';
 
 import { APK, formatMegabytes, PRIMARY_APK } from '@/content/apk';
@@ -8,26 +16,37 @@ import { DownloadButton } from './download-button';
 import { Reveal } from './reveal';
 import { SectionHeading } from './section-heading';
 
-const STEPS = [
+const STEPS: readonly {
+  icon: LucideIcon;
+  title: string;
+  text: string;
+  warning?: boolean;
+}[] = [
   {
     icon: Download,
     title: 'Téléchargez le fichier',
-    text: 'Appuyez sur « Télécharger l’APK ». Si Chrome demande confirmation, choisissez « Télécharger quand même ».',
+    text: 'Appuyez sur « Télécharger l’APK ». Si Chrome demande confirmation, choisissez « Télécharger quand même ».',
   },
   {
     icon: FolderOpen,
     title: 'Ouvrez-le',
-    text: 'Depuis la notification de fin de téléchargement, ou dans l’app Fichiers, dossier « Téléchargements ».',
+    text: 'Depuis la notification de fin de téléchargement, ou dans l’app Fichiers, dossier « Téléchargements ».',
   },
   {
     icon: ShieldAlert,
     title: 'Autorisez l’installation',
-    text: 'Android affiche « Sources inconnues » : touchez « Paramètres », activez « Autoriser cette source », puis revenez.',
+    text: 'Android affiche « Sources inconnues » : touchez « Paramètres », activez « Autoriser cette source », puis revenez.',
+  },
+  {
+    icon: ShieldQuestion,
+    title: 'Passez l’avertissement de Play Protect',
+    text: 'Google affiche « Application bloquée pour protéger votre appareil » : Voxlivre est nouveau, Google ne le connaît pas encore. Ne touchez pas « Compris », qui annule. Touchez « Plus de détails », puis le texte « Installer quand même ».',
+    warning: true,
   },
   {
     icon: CheckCircle2,
     title: 'Installez et connectez-vous',
-    text: 'Touchez « Installer », puis « Ouvrir ». Choisissez « Continuer avec Google » : vos unités offertes vous attendent.',
+    text: 'Touchez « Installer », puis « Ouvrir ». Choisissez « Continuer avec Google » : vos unités offertes vous attendent.',
   },
 ];
 
@@ -53,25 +72,29 @@ export function InstallGuide() {
           <ol className="space-y-4">
             {STEPS.map((step, i) => (
               <Reveal as="li" key={step.title}>
-                <div className="flex gap-5 rounded-[var(--radius-card)] border border-line bg-bg p-5">
+                <div
+                  className={`flex gap-5 rounded-[var(--radius-card)] border bg-bg p-5 ${
+                    step.warning ? 'border-warning/60' : 'border-line'
+                  }`}
+                >
                   <span className="tabular grid size-10 shrink-0 place-items-center rounded-full bg-primary font-bold text-on-primary">
                     {i + 1}
                   </span>
                   <div>
                     <h3 className="flex items-center gap-2 font-semibold text-ink">
-                      <step.icon aria-hidden className="size-5 text-accent" strokeWidth={1.75} />
+                      <step.icon
+                        aria-hidden
+                        className="size-5 shrink-0 text-accent"
+                        strokeWidth={1.75}
+                      />
                       {step.title}
                     </h3>
                     <p className="mt-1.5 leading-relaxed text-ink-2">{step.text}</p>
+                    {step.warning ? <PlayProtectPath /> : null}
                   </div>
                 </div>
               </Reveal>
             ))}
-            <li className="px-1 text-sm leading-relaxed text-ink-2">
-              Si Google Play Protect affiche un avertissement, touchez « Plus de détails » puis «
-              Installer quand même » : l’application n’est simplement pas encore connue du Play
-              Store.
-            </li>
           </ol>
 
           <Reveal>
@@ -130,5 +153,28 @@ export function InstallGuide() {
         </div>
       </div>
     </section>
+  );
+}
+
+/** Chemin dans la boîte de Play Protect : le gros bouton annule, l'issue est un texte. */
+function PlayProtectPath() {
+  return (
+    <ol
+      aria-label="Chemin à suivre dans la fenêtre de Play Protect"
+      className="mt-4 flex flex-wrap items-center gap-2 text-sm"
+    >
+      <li className="rounded-full border border-line bg-elevated px-3 py-1.5 text-ink">
+        Plus de détails ▾
+      </li>
+      <li aria-hidden className="text-ink-2">
+        →
+      </li>
+      <li className="rounded-full border-2 border-accent px-3 py-1.5 font-semibold text-ink">
+        Installer quand même
+      </li>
+      <li className="w-full text-xs text-ink-2">
+        Le bouton « Compris » ferme la fenêtre sans installer.
+      </li>
+    </ol>
   );
 }

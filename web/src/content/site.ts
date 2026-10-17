@@ -84,7 +84,7 @@ export const FAQ: readonly Faq[] = [
   },
   {
     q: 'Est-ce sûr d’installer un fichier APK ?',
-    a: 'Oui, si vous le téléchargez ici et nulle part ailleurs. Chaque version est signée par Voxlivre et son empreinte SHA-256 est affichée sur cette page : vous pouvez la comparer. N’installez jamais un APK Voxlivre reçu d’une autre source.',
+    a: 'Oui, si vous le téléchargez ici et nulle part ailleurs. Chaque version est signée par Voxlivre et son empreinte SHA-256 est affichée sur cette page : vous pouvez la comparer. Google Play Protect affiche « Application bloquée » parce que Voxlivre est nouveau et pas encore sur le Play Store : touchez « Plus de détails » puis « Installer quand même ». N’installez jamais un APK Voxlivre reçu d’une autre source.',
   },
   {
     q: 'Combien ça coûte ?',
