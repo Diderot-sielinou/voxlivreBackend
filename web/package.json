@@ -1,0 +1,49 @@
+{
+  "name": "voxlivre-web",
+  "version": "1.0.0",
+  "description": "voxlivre.store — page d'accueil et pages légales, export statique Next.js servi par S3 + CloudFront (ADR-0020, ADR-0031).",
+  "private": true,
+  "license": "UNLICENSED",
+  "packageManager": "pnpm@11.15.1",
+  "engines": {
+    "node": ">=22.22.1 <23"
+  },
+  "browserslist": [
+    "chrome >= 111",
+    "edge >= 111",
+    "firefox >= 111",
+    "safari >= 15.4",
+    "not dead"
+  ],
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "serve": "node scripts/serve-out.mjs",
+    "lint": "eslint . --fix",
+    "lint:check": "eslint . --max-warnings 0",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "tsc --noEmit",
+    "test:e2e": "playwright test"
+  },
+  "dependencies": {
+    "lucide-react": "^1.16.0",
+    "next": "^16.2.6",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.11.3",
+    "@playwright/test": "^1.60.0",
+    "@tailwindcss/postcss": "^4.3.0",
+    "@types/node": "^22.15.0",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
+    "eslint": "^9.39.4",
+    "eslint-config-next": "^16.2.6",
+    "prettier": "^3.4.2",
+    "prettier-plugin-tailwindcss": "^0.8.0",
+    "tailwindcss": "^4.3.0",
+    "typescript": "^5.7.3"
+  }
+}

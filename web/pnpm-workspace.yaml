@@ -1,0 +1,7 @@
+# Projet autonome (pas un paquet du backend) : ce fichier en fait sa propre
+# racine pnpm et porte les décisions sur les scripts postinstall (pnpm ≥ 11).
+# sharp : non requis, l'export statique sert les images telles quelles.
+allowBuilds:
+  sharp: false
+  unrs-resolver: true
+  '@tailwindcss/oxide': true
