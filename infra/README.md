@@ -131,7 +131,7 @@ push sur master → CI complète (9 contrôles) → job « Deploy (production) �
 ```
 
 - **Confiance** : le rôle n'accepte que
-  `repo:Diderot-sielinou@131718107/voxkivreBackend@1367692888:environment:production`
+  `repo:Diderot-sielinou@131718107/voxlivreBackend@1367692888:environment:production`
   (sujet **immuable** de GitHub, activé sur ce dépôt :
   `gh api repos/<dépôt>/actions/oidc/customization/sub`) ;
   l'environnement GitHub `production` n'accepte que `master`. Une PR, une
