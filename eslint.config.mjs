@@ -24,7 +24,8 @@ import tseslint from 'typescript-eslint';
  */
 export default tseslint.config(
   {
-    ignores: ['eslint.config.mjs', 'dist/**', 'coverage/**', 'node_modules/**'],
+    // `web/` : site Next.js, avec son propre outillage (ADR-0031).
+    ignores: ['eslint.config.mjs', 'dist/**', 'coverage/**', 'node_modules/**', 'web/**'],
   },
 
   eslint.configs.recommended,
