@@ -176,6 +176,12 @@ export const envSchema = z
       .int()
       .positive()
       .default(60 * 60 * 24),
+    // Connexion Google par ID token (ADR-0030) : identifiant du client OAuth
+    // **Web** (audience des jetons obtenus par l'app). Absent → Google coupé.
+    GOOGLE_CLIENT_ID: z
+      .string()
+      .regex(/^[\w-]+\.apps\.googleusercontent\.com$/, 'GOOGLE_CLIENT_ID: a Google OAuth client ID')
+      .optional(),
 
     // ------------------------------------------------------------------
     // Stockage objet S3-compatible (ADR-0007, ADR-0012) — deux formes :

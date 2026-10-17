@@ -72,17 +72,30 @@ type OtpEnv = Pick<
   | 'AUTH_RATE_LIMIT_STORAGE'
   | 'SESSION_EXPIRES_IN_SECONDS'
   | 'SESSION_UPDATE_AGE_SECONDS'
+  | 'GOOGLE_CLIENT_ID'
 >;
 
 /**
+ * Appelé une fois le compte créé (transaction validée) : publie l'événement
+ * qui déclenche les crédits de bienvenue (ADR-0030). Ne lève jamais.
+ */
+export type UserCreatedListener = (userId: string) => Promise<void>;
+
+/**
  * Construit l'instance better-auth Voxlivre : OTP email + OTP téléphone,
- * bearer pour le mobile, sessions en DB, rate-limit en DB.
+ * Google par ID token (ADR-0030), bearer pour le mobile, sessions en DB,
+ * rate-limit en DB.
  *
  * Pas d'annotation de retour : better-auth infère un type sur-mesure
  * (plugins + additionalFields) que TS ne peut pas widener sans perdre les
  * routes typées. `BetterAuthInstance` = `ReturnType<typeof buildBetterAuth>`.
  */
-export function buildBetterAuth(env: OtpEnv, db: DrizzleClient, otpSender: OtpSenderPort) {
+export function buildBetterAuth(
+  env: OtpEnv,
+  db: DrizzleClient,
+  otpSender: OtpSenderPort,
+  onUserCreated: UserCreatedListener,
+) {
   const isProduction = env.NODE_ENV === 'production';
 
   return betterAuth({
@@ -93,8 +106,22 @@ export function buildBetterAuth(env: OtpEnv, db: DrizzleClient, otpSender: OtpSe
     secret: env.BETTER_AUTH_SECRET,
     baseURL: env.BETTER_AUTH_URL,
     trustedOrigins: env.BETTER_AUTH_TRUSTED_ORIGINS,
-    // Aucun mot de passe : OTP uniquement (DEC-09).
+    // Aucun mot de passe : OTP ou Google (DEC-09, ADR-0030).
     emailAndPassword: { enabled: false },
+    // L'app obtient l'ID token avec le SDK Google et l'envoie à
+    // `/sign-in/social` : aucun secret client ni redirection. Un compte de
+    // même adresse vérifiée est rattaché (comportement par défaut).
+    socialProviders:
+      env.GOOGLE_CLIENT_ID === undefined ? {} : { google: { clientId: env.GOOGLE_CLIENT_ID } },
+    databaseHooks: {
+      user: {
+        create: {
+          after: async (created) => {
+            await onUserCreated(created.id);
+          },
+        },
+      },
+    },
     user: {
       additionalFields: {
         // `input: false` : jamais settable par le client. DEFAULT 'user' en DB.

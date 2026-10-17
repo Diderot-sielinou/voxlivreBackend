@@ -19,6 +19,9 @@ const SPAMMER_IP = '10.0.0.99';
 // Client à part : les tests de suppression ne butent pas sur le plafond d'envoi de CLIENT_IP.
 // eslint-disable-next-line sonarjs/no-hardcoded-ip -- valeur de test
 const DELETION_IP = '10.0.0.2';
+// Client à part : la création de compte ne consomme pas le plafond de CLIENT_IP.
+// eslint-disable-next-line sonarjs/no-hardcoded-ip -- valeur de test
+const SIGN_UP_IP = '10.0.0.3';
 const AUTH = `${BASE_URL}/api/auth`;
 
 /** Capture les codes au lieu de les envoyer. */
@@ -67,6 +70,8 @@ describe('better-auth OTP (integration, Testcontainers)', () => {
   let pg: StartedPostgres;
   let sender: CapturingOtpSender;
   let auth: BetterAuthInstance;
+  /** Comptes signalés par le hook de création (crédits de bienvenue, ADR-0030). */
+  const created: string[] = [];
 
   beforeAll(async () => {
     pg = await startMigratedPostgres();
@@ -83,9 +88,14 @@ describe('better-auth OTP (integration, Testcontainers)', () => {
         AUTH_RATE_LIMIT_STORAGE: 'database',
         SESSION_EXPIRES_IN_SECONDS: 3600,
         SESSION_UPDATE_AGE_SECONDS: 60,
+        GOOGLE_CLIENT_ID: 'test-web.apps.googleusercontent.com',
       },
       pg.db,
       sender,
+      (userId) => {
+        created.push(userId);
+        return Promise.resolve();
+      },
     );
   }, 120_000);
 
@@ -111,6 +121,34 @@ describe('better-auth OTP (integration, Testcontainers)', () => {
     const body = (await session.json()) as { user: { email: string; role?: string } };
     expect(body.user.email).toBe(email);
     expect(body.user.role).toBe('user');
+  });
+
+  it('reports each new account once, after its creation (ADR-0030)', async () => {
+    const email = 'nouveau@x.cm';
+    const before = created.length;
+    const client = { 'x-forwarded-for': SIGN_UP_IP };
+    for (let i = 0; i < 2; i += 1) {
+      await post(auth, '/email-otp/send-verification-otp', { email, type: 'sign-in' }, client);
+      const signedIn = await post(
+        auth,
+        '/sign-in/email-otp',
+        { email, otp: sender.lastCodeFor(email) },
+        client,
+      );
+      expect(signedIn.status).toBe(200);
+    }
+    expect(created).toHaveLength(before + 1);
+    const users = new DrizzleUserQuery(pg.db);
+    expect(await users.findById(UserId.of(String(created.at(-1))))).toMatchObject({ email });
+  });
+
+  it('google: refuses an ID token that Google did not sign (ADR-0030)', async () => {
+    const res = await post(auth, '/sign-in/social', {
+      provider: 'google',
+      idToken: { token: 'header.payload.signature' },
+    });
+    expect(res.status).toBe(401);
+    expect(res.headers.get('set-auth-token')).toBeNull();
   });
 
   it('email: locks the code after 3 wrong attempts', async () => {
