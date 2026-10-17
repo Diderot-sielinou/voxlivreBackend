@@ -57,7 +57,7 @@ across devices, and sells listening time through **Orange Money / MTN MoMo**.
 - **Protect personal data** — the source PDF is deleted after extraction, phone numbers
   are stored as HMACs, no personal data in logs, full account deletion.
 - **Stay maintainable by a solo developer** — strict hexagonal architecture enforced by
-  the linter, 29 Architecture Decision Records, ~750 automated test cases.
+  the linter, 29 Architecture Decision Records, 900+ automated tests (841 unit, 62 end-to-end, plus integration).
 - **Run in production for a few dollars a month** — the whole AWS stack is Terraform,
   deployed by GitHub Actions through OIDC, with the server switched off at night.
 
