@@ -18,6 +18,7 @@ const types = {
   '.mp3': 'audio/mpeg',
   '.mp4': 'video/mp4',
   '.webm': 'video/webm',
+  '.vtt': 'text/vtt; charset=utf-8',
   '.json': 'application/json',
   '.txt': 'text/plain; charset=utf-8',
   '.apk': 'application/vnd.android.package-archive',

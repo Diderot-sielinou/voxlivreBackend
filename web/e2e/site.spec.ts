@@ -49,6 +49,11 @@ test('le contenu est visible sans JavaScript', async ({ browser }) => {
     .getByRole('heading', { name: 'Installé en moins de deux minutes' })
     .evaluate((el) => getComputedStyle(el).opacity);
   expect(Number(opacity)).toBeGreaterThan(0);
+  // Sans JS, la vidéo garde ses contrôles natifs (pas de grand ▶ inerte).
+  await expect(page.locator('section[aria-labelledby="video"] video')).toHaveAttribute(
+    'controls',
+    '',
+  );
   await context.close();
 });
 
@@ -97,4 +102,25 @@ test('la barre de téléchargement mobile ne couvre jamais le hero', async ({ pa
   // Hero dépassé (section suivante en haut d'écran) : barre visible.
   await page.locator('#voix').evaluate((el) => el.scrollIntoView({ block: 'start' }));
   await expect(bar).toHaveAttribute('aria-hidden', 'false');
+});
+
+test('la vidéo publicitaire ne télécharge rien avant ▶ et a ses sous-titres', async ({ page }) => {
+  const video: string[] = [];
+  page.on('request', (req) => {
+    if (/\.(mp4|webm)$/.test(req.url())) video.push(req.url());
+  });
+  await page.goto('/');
+  const player = page.locator('section[aria-labelledby="video"] video');
+  await player.scrollIntoViewIfNeeded();
+  await expect(player).toHaveAttribute('preload', 'none');
+  await expect(player).toHaveAttribute('poster', '/video/voxlivre-poster.webp');
+  await expect(player.locator('track[kind="captions"]')).toHaveAttribute('srclang', 'fr');
+  await page.waitForLoadState('networkidle');
+  expect(video).toEqual([]);
+  // Le grand ▶ lance la lecture et laisse place aux contrôles natifs.
+  await page.getByRole('button', { name: /Lire la vidéo/ }).click();
+  await expect(player).toHaveAttribute('controls', '');
+  await expect
+    .poll(() => player.evaluate((el: HTMLVideoElement) => el.currentTime))
+    .toBeGreaterThan(0);
 });
