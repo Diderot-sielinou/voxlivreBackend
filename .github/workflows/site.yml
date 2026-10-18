@@ -70,6 +70,11 @@ jobs:
           aws s3 sync web/out/ "s3://$BUCKET/" --delete \
             --exclude 'telecharger/*' --exclude '_next/static/*' \
             --cache-control "public, max-age=300"
+          # Sous-titres : le type deviné par `sync` dépend des types MIME du
+          # runner ; un navigateur ignore une piste qui n'est pas en `text/vtt`.
+          aws s3 cp web/out/video/ "s3://$BUCKET/video/" --recursive \
+            --exclude '*' --include '*.vtt' \
+            --content-type 'text/vtt; charset=utf-8' --cache-control "public, max-age=300"
       - name: Invalidate
         run: |
           aws cloudfront create-invalidation \
