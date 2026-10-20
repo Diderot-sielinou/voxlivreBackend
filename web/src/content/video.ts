@@ -1,7 +1,7 @@
 /**
  * Publicité motion design (prompt : doc-projet/prompt-pub-motion-design.md).
- * Tant que `src` est `null`, la section n'est pas affichée. Pour l'activer :
- * déposer les fichiers dans `public/video/`, puis renseigner les chemins.
+ * Rendue avec le projet Remotion du prompt (30 s, 16:9). `src` à `null`
+ * masque la section.
  * Formats : MP4 H.264 (lu partout) + WebM VP9 (plus léger), 16:9, ≤ 4 Mo,
  * muette, avec une image d'attente.
  */
@@ -12,9 +12,9 @@ export const PROMO_VIDEO: {
   readonly captions: string | null;
   readonly title: string;
 } = {
-  src: null,
-  webm: null,
-  poster: null,
-  captions: null,
+  src: '/video/voxlivre-30s.mp4',
+  webm: '/video/voxlivre-30s.webm',
+  poster: '/video/voxlivre-poster.webp',
+  captions: '/video/voxlivre-30s.fr.vtt',
   title: 'Voxlivre en 30 secondes',
 };
